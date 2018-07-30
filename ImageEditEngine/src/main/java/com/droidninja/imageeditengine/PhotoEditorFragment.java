@@ -1,6 +1,7 @@
 package com.droidninja.imageeditengine;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,7 +11,6 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -18,7 +18,9 @@ import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
@@ -57,7 +59,9 @@ public class PhotoEditorFragment extends BaseFragment
   RecyclerView filterRecylerview;
   View filterLayout;
   View filterLabel;
-  FloatingActionButton doneBtn;
+  LinearLayout llBottom;
+  ImageView ivSend;
+  EditText edtCaption;
   private Bitmap mainBitmap;
   private LruCache<Integer, Bitmap> cacheStack;
   private int filterLayoutHeight;
@@ -175,7 +179,9 @@ public class PhotoEditorFragment extends BaseFragment
     filterRecylerview = view.findViewById(R.id.filter_list_rv);
     filterLayout = view.findViewById(R.id.filter_list_layout);
     filterLabel = view.findViewById(R.id.filter_label);
-    doneBtn = view.findViewById(R.id.done_btn);
+    ivSend = view.findViewById(R.id.ivSend);
+    llBottom = view.findViewById(R.id.llBottom);
+    edtCaption = view.findViewById(R.id.edtCaption);
 
     if (getArguments() != null && getActivity()!=null && getActivity().getIntent()!=null) {
       final String imagePath = getArguments().getString(ImageEditor.EXTRA_IMAGE_PATH);
@@ -220,7 +226,7 @@ public class PhotoEditorFragment extends BaseFragment
       stickerButton.setOnClickListener(this);
       addTextButton.setOnClickListener(this);
       paintButton.setOnClickListener(this);
-      doneBtn.setOnClickListener(this);
+      ivSend.setOnClickListener(this);
       view.findViewById(R.id.back_iv).setOnClickListener(this);
 
       colorPickerView.setOnColorChangeListener(
@@ -247,7 +253,7 @@ public class PhotoEditorFragment extends BaseFragment
             filterLayout.setTranslationY(filterLayoutHeight);
             photoEditorView.setOnTouchListener(
                 new FilterTouchListener(filterLayout, filterLayoutHeight, mainImageView,
-                    photoEditorView, filterLabel, doneBtn));
+                    photoEditorView, filterLabel, llBottom));
           }
         });
 
@@ -300,7 +306,7 @@ public class PhotoEditorFragment extends BaseFragment
       setMode(MODE_PAINT);
     } else if (id == R.id.back_iv) {
       getActivity().onBackPressed();
-    }else if (id == R.id.done_btn) {
+    }else if (id == R.id.ivSend) {
       if(selectedFilter!=null) {
         new ApplyFilterTask(new TaskCallback<Bitmap>() {
           @Override public void onTaskDone(Bitmap data) {

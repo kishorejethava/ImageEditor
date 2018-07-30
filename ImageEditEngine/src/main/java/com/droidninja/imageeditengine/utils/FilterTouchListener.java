@@ -7,6 +7,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+
 import com.droidninja.imageeditengine.views.PhotoEditorView;
 
 /**
@@ -17,17 +19,17 @@ public class FilterTouchListener implements View.OnTouchListener {
   private final int screenHeight;
   private final View filterLabel;
   private final PhotoEditorView photoEditorView;
-  private final FloatingActionButton doneBtn;
+  private final LinearLayout llBottom;
   private float viewHeight;
   private View mView;
   private float mMotionDownY;
 
   public FilterTouchListener(View filterLayout, float filterLayoutHeight,
       final ImageView mainImageView, final PhotoEditorView photoEditorView, View filterLabel,
-      FloatingActionButton doneBtn) {
+      LinearLayout llBottom) {
     mView = filterLayout;
     this.filterLabel = filterLabel;
-    this.doneBtn = doneBtn;
+    this.llBottom = llBottom;
     this.mainImageView = mainImageView;
     this.photoEditorView = photoEditorView;
     DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -61,7 +63,7 @@ public class FilterTouchListener implements View.OnTouchListener {
         if ((yPost >= 0 && yPost < viewHeight)) {
           mView.setTranslationY(yPost);
           filterLabel.setAlpha(Math.abs(yPost) / 1000);
-          doneBtn.setAlpha(Math.abs(yPost) / 1000);
+          llBottom.setAlpha(Math.abs(yPost) / 1000);
           //mainImageView.setScaleX(1f-Math.abs(yPost)/1000);
           //mainImageView.setScaleY(1f-Math.abs(yPost)/1000);
           Log.i(FilterTouchListener.class.getSimpleName(), "moved");
@@ -83,7 +85,7 @@ public class FilterTouchListener implements View.OnTouchListener {
           photoEditorView.animate().scaleX(1f);
           photoEditorView.animate().scaleY(1f);
           filterLabel.animate().alpha(1f);
-          doneBtn.animate().alpha(1f);
+          llBottom.animate().alpha(1f);
         } else {
           mView.animate().translationY(0);
           mainImageView.animate().scaleX(0.7f);
@@ -91,7 +93,7 @@ public class FilterTouchListener implements View.OnTouchListener {
           photoEditorView.animate().scaleX(0.7f);
           photoEditorView.animate().scaleY(0.7f);
           filterLabel.animate().alpha(0f);
-          doneBtn.animate().alpha(0f);
+          llBottom.animate().alpha(0f);
         }
 
         break;

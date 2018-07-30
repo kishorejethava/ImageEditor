@@ -9,7 +9,7 @@
     <activity
         android:name=".ImageEditActivity"
         android:theme="@style/LibAppTheme"
-        android:windowSoftInputMode="adjustNothing">
+        android:windowSoftInputMode="adjustResize|stateHidden">
     </activity>
   </application>
 
