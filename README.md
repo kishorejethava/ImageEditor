@@ -1,2 +1,2 @@
-# PhotoEditor
- com.gitlab.kishorejethava:PhotoEditor:v1.0
+# ImageEditor
+ implementation 'com.github.kishorejethava:ImageEditor:-SNAPSHOT'
