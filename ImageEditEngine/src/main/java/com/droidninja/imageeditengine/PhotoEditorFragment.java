@@ -1,7 +1,6 @@
 package com.droidninja.imageeditengine;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -115,7 +114,7 @@ public class PhotoEditorFragment extends BaseFragment
   public interface OnFragmentInteractionListener {
     void onCropClicked(Bitmap bitmap);
 
-    void onDoneClicked(String imagePath);
+    void onDoneClicked(String imagePath, String captionMessage);
   }
 
   public void setImageBitmap(Bitmap bitmap) {
@@ -343,7 +342,7 @@ public class PhotoEditorFragment extends BaseFragment
                   new TaskCallback<String>() {
                     @Override public void onTaskDone(String data) {
                       if(NetworkUtil.isOnline(getContext())) {
-                        mListener.onDoneClicked(data);
+                        mListener.onDoneClicked(data,edtCaption.getText().toString());
                       }else{
                         Toast.makeText(getContext(),R.string.network_not_available,Toast.LENGTH_SHORT).show();
                       }
@@ -358,7 +357,7 @@ public class PhotoEditorFragment extends BaseFragment
             new TaskCallback<String>() {
               @Override public void onTaskDone(String data) {
                 if(NetworkUtil.isOnline(getContext())) {
-                  mListener.onDoneClicked(data);
+                  mListener.onDoneClicked(data, edtCaption.getText().toString());
                 }else{
                   Toast.makeText(getContext(),R.string.network_not_available,Toast.LENGTH_SHORT).show();
                 }

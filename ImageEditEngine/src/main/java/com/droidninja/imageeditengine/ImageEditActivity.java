@@ -21,12 +21,9 @@ public class ImageEditActivity extends BaseImageEditActivity
     CropFragment.OnFragmentInteractionListener {
   private Rect cropRect;
 
-  //private View touchView;
-
   @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_image_edit);
-
     String imagePath = getIntent().getStringExtra(EXTRA_IMAGE_PATH);
     if (imagePath != null) {
       PhotoEditorFragment photoEditorFragment = PhotoEditorFragment.newInstance(imagePath);
@@ -39,11 +36,11 @@ public class ImageEditActivity extends BaseImageEditActivity
         CropFragment.newInstance(bitmap, cropRect));
   }
 
-  @Override public void onDoneClicked(String imagePath) {
+  @Override public void onDoneClicked(String imagePath, String captionMessage) {
 
     Intent intent = new Intent();
     intent.putExtra(ImageEditor.EXTRA_EDITED_PATH, imagePath);
-    intent.putExtra(ImageEditor.EXTRA_EDITED_PATH, imagePath);
+    intent.putExtra(ImageEditor.EXTRA_CAPTION_MESSAGE, captionMessage);
     setResult(Activity.RESULT_OK, intent);
     finish();
   }
