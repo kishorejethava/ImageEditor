@@ -26,6 +26,7 @@ public class ImageEditor {
   public static final String EXTRA_CROP_RECT="EXTRA_CROP_RECT";
 
   public static final String EXTRA_EDITED_PATH ="EXTRA_EDITED_PATH";
+  public static final String EXTRA_CAPTION_MESSAGE ="EXTRA_CAPTION_MESSAGE";
 
   public static final int RC_IMAGE_EDITOR= 0x34;
 

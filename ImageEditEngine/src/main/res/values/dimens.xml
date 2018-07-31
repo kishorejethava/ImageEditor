@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <dimen name="done_btn_margin_bottom">36dp</dimen>
-  <dimen name="done_btn_margin_right">20dp</dimen>
 
 
 </resources>

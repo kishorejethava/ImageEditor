@@ -43,6 +43,7 @@ public class ImageEditActivity extends BaseImageEditActivity
 
     Intent intent = new Intent();
     intent.putExtra(ImageEditor.EXTRA_EDITED_PATH, imagePath);
+    intent.putExtra(ImageEditor.EXTRA_EDITED_PATH, imagePath);
     setResult(Activity.RESULT_OK, intent);
     finish();
   }

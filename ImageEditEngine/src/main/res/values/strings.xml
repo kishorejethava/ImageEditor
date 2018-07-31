@@ -2,6 +2,8 @@
 
   <!-- TODO: Remove or change this placeholder text -->
 
+  <string name="network_not_available">The Internet connection appears to be offline</string>
+
   <string-array name="photo_editor_emoji">
 
     <!-- Smiles -->

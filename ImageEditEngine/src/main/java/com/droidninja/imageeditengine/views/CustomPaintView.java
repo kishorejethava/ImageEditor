@@ -164,6 +164,7 @@ public class CustomPaintView extends View {
     }
 
     generatorBit();
+    invalidate();
   }
 
   public void setBounds(RectF bitmapRect) {

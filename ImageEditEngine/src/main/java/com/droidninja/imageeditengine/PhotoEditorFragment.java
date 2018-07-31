@@ -18,9 +18,11 @@ import android.util.LruCache;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.SimpleTarget;
@@ -33,6 +35,7 @@ import com.droidninja.imageeditengine.model.ImageFilter;
 import com.droidninja.imageeditengine.utils.FilterHelper;
 import com.droidninja.imageeditengine.utils.FilterTouchListener;
 import com.droidninja.imageeditengine.utils.Matrix3;
+import com.droidninja.imageeditengine.utils.NetworkUtil;
 import com.droidninja.imageeditengine.utils.TaskCallback;
 import com.droidninja.imageeditengine.utils.Utility;
 import com.droidninja.imageeditengine.views.PhotoEditorView;
@@ -61,6 +64,7 @@ public class PhotoEditorFragment extends BaseFragment
   View filterLabel;
   LinearLayout llBottom;
   ImageView ivSend;
+  ImageView ivUndo;
   EditText edtCaption;
   private Bitmap mainBitmap;
   private LruCache<Integer, Bitmap> cacheStack;
@@ -180,6 +184,7 @@ public class PhotoEditorFragment extends BaseFragment
     filterLayout = view.findViewById(R.id.filter_list_layout);
     filterLabel = view.findViewById(R.id.filter_label);
     ivSend = view.findViewById(R.id.ivSend);
+    ivUndo = view.findViewById(R.id.ivUndo);
     llBottom = view.findViewById(R.id.llBottom);
     edtCaption = view.findViewById(R.id.edtCaption);
 
@@ -187,26 +192,38 @@ public class PhotoEditorFragment extends BaseFragment
       final String imagePath = getArguments().getString(ImageEditor.EXTRA_IMAGE_PATH);
 
       Glide.with(this).asBitmap().load(imagePath).into(new SimpleTarget<Bitmap>() {
-        @Override public void onResourceReady(@NonNull Bitmap resource,
+        @Override public void onResourceReady(@NonNull final Bitmap resource,
             @Nullable Transition<? super Bitmap> transition) {
-          int currentBitmapWidth = resource.getWidth();
-          int currentBitmapHeight = resource.getHeight();
-          int ivWidth = mainImageView.getWidth();
-          int newHeight = (int) Math.floor(
-              (double) currentBitmapHeight * ((double) ivWidth / (double) currentBitmapWidth));
-          originalBitmap = Bitmap.createScaledBitmap(resource, ivWidth, newHeight, true);
-          mainBitmap = originalBitmap;
-          setImageBitmap(mainBitmap);
 
-          new GetFiltersTask(new TaskCallback<ArrayList<ImageFilter>>() {
-            @Override public void onTaskDone(ArrayList<ImageFilter> data) {
-              FilterImageAdapter filterImageAdapter = (FilterImageAdapter) filterRecylerview.getAdapter();
-              if (filterImageAdapter != null) {
-                filterImageAdapter.setData(data);
-                filterImageAdapter.notifyDataSetChanged();
-              }
+          //get width of drawn ImageView
+          ViewTreeObserver vto = mainImageView.getViewTreeObserver();
+          vto.addOnGlobalLayoutListener (new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+              mainImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+              //render bitmap on ImageView
+              int currentBitmapWidth = resource.getWidth();
+              int currentBitmapHeight = resource.getHeight();
+              int ivWidth = mainImageView.getMeasuredWidth();
+              int newHeight = (int) Math.floor(
+                (double) currentBitmapHeight * ((double) ivWidth / (double) currentBitmapWidth));
+              originalBitmap = Bitmap.createScaledBitmap(resource, ivWidth, newHeight, true);
+              mainBitmap = originalBitmap;
+              setImageBitmap(mainBitmap);
+
+              new GetFiltersTask(new TaskCallback<ArrayList<ImageFilter>>() {
+                @Override public void onTaskDone(ArrayList<ImageFilter> data) {
+                  FilterImageAdapter filterImageAdapter = (FilterImageAdapter) filterRecylerview.getAdapter();
+                  if (filterImageAdapter != null) {
+                    filterImageAdapter.setData(data);
+                    filterImageAdapter.notifyDataSetChanged();
+                  }
+                }
+              }, mainBitmap).execute();
+
             }
-          }, mainBitmap).execute();
+          });
         }
       });
 
@@ -216,7 +233,6 @@ public class PhotoEditorFragment extends BaseFragment
       setVisibility(cropButton,intent.getBooleanExtra(ImageEditor.EXTRA_IS_CROP_MODE, false));
       setVisibility(stickerButton,intent.getBooleanExtra(ImageEditor.EXTRA_IS_STICKER_MODE, false));
       setVisibility(paintButton,intent.getBooleanExtra(ImageEditor.EXTRA_IS_PAINT_MODE, false));
-      setVisibility(filterLayout,intent.getBooleanExtra(ImageEditor.EXTRA_HAS_FILTERS, false));
 
 
 
@@ -227,6 +243,7 @@ public class PhotoEditorFragment extends BaseFragment
       addTextButton.setOnClickListener(this);
       paintButton.setOnClickListener(this);
       ivSend.setOnClickListener(this);
+      ivUndo.setOnClickListener(this);
       view.findViewById(R.id.back_iv).setOnClickListener(this);
 
       colorPickerView.setOnColorChangeListener(
@@ -251,6 +268,7 @@ public class PhotoEditorFragment extends BaseFragment
           @SuppressLint("ClickableViewAccessibility") @Override public void run() {
             filterLayoutHeight = filterLayout.getHeight();
             filterLayout.setTranslationY(filterLayoutHeight);
+            setVisibility(filterLayout,true);
             photoEditorView.setOnTouchListener(
                 new FilterTouchListener(filterLayout, filterLayoutHeight, mainImageView,
                     photoEditorView, filterLabel, llBottom));
@@ -279,6 +297,14 @@ public class PhotoEditorFragment extends BaseFragment
       AnimationHelper.animate(getContext(), colorPickerView, R.anim.slide_out_right, View.INVISIBLE,
           null);
     }
+    //Hide message layout when overlay add text show
+    if (currentMode == MODE_ADD_TEXT) {
+      AnimationHelper.animate(getContext(), llBottom, R.anim.fade_in_medium, View.INVISIBLE,
+        null);
+    } else {
+      AnimationHelper.animate(getContext(), llBottom, R.anim.fade_in_medium, View.VISIBLE,
+        null);
+    }
   }
 
   @Override public void onClick(final View view) {
@@ -306,6 +332,8 @@ public class PhotoEditorFragment extends BaseFragment
       setMode(MODE_PAINT);
     } else if (id == R.id.back_iv) {
       getActivity().onBackPressed();
+    } else if (id == R.id.ivUndo) {
+      photoEditorView.reset();
     }else if (id == R.id.ivSend) {
       if(selectedFilter!=null) {
         new ApplyFilterTask(new TaskCallback<Bitmap>() {
@@ -314,7 +342,11 @@ public class PhotoEditorFragment extends BaseFragment
               new ProcessingImage(getBitmapCache(data), Utility.getCacheFilePath(view.getContext()),
                   new TaskCallback<String>() {
                     @Override public void onTaskDone(String data) {
-                      mListener.onDoneClicked(data);
+                      if(NetworkUtil.isOnline(getContext())) {
+                        mListener.onDoneClicked(data);
+                      }else{
+                        Toast.makeText(getContext(),R.string.network_not_available,Toast.LENGTH_SHORT).show();
+                      }
                     }
                   }).execute();
             }
@@ -325,7 +357,11 @@ public class PhotoEditorFragment extends BaseFragment
         new ProcessingImage(getBitmapCache(mainBitmap), Utility.getCacheFilePath(view.getContext()),
             new TaskCallback<String>() {
               @Override public void onTaskDone(String data) {
-                mListener.onDoneClicked(data);
+                if(NetworkUtil.isOnline(getContext())) {
+                  mListener.onDoneClicked(data);
+                }else{
+                  Toast.makeText(getContext(),R.string.network_not_available,Toast.LENGTH_SHORT).show();
+                }
               }
             }).execute();
       }
