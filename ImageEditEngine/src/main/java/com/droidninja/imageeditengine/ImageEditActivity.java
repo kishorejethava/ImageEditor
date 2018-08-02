@@ -7,6 +7,7 @@ import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
+import android.view.WindowManager;
 
 import com.droidninja.imageeditengine.utils.FragmentUtil;
 
@@ -24,6 +25,7 @@ public class ImageEditActivity extends BaseImageEditActivity
   @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_image_edit);
+    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
     String imagePath = getIntent().getStringExtra(EXTRA_IMAGE_PATH);
     if (imagePath != null) {
       PhotoEditorFragment photoEditorFragment = PhotoEditorFragment.newInstance(imagePath);
